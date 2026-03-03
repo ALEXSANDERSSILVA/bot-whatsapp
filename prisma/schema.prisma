@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// O Prestador de Serviço (Dono da agenda)
+model Professional {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  phone        String?       // Opcional por enquanto
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  appointments Appointment[] // Relação: Um profissional tem vários agendamentos
+}
+
+// O Cliente final (Que chama no WhatsApp)
+model Patient {
+  id           String        @id @default(uuid())
+  name         String
+  whatsapp     String        @unique // Essencial para a IA identificar quem está falando
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  appointments Appointment[] // Relação: Um paciente tem vários agendamentos
+}
+
+// O Agendamento (O elo entre paciente e prestador)
+model Appointment {
+  id             String        @id @default(uuid())
+  dateTime       DateTime      // Data e hora marcada
+  status         ApptStatus    @default(PENDING) // Pendente, Confirmado ou Cancelado
+  paymentStatus  PaymentStatus @default(PENDING) // Controle de pagamento
+
+  professionalId String
+  professional   Professional  @relation(fields: [professionalId], references: [id])
+  
+  patientId      String
+  patient        Patient       @relation(fields: [patientId], references: [id])
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// Enums para padronizar os status
+enum ApptStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PAID_IN_PERSON // Para quando o cliente paga na maquininha do consultório
+}
