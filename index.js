@@ -1,3 +1,8 @@
+require('dotenv').config();
+
+// Aceder às chaves usando process.env
+console.log("O token é:", process.env.MEU_TOKEN_DE_VERIFICACAO);
+
 const express = require('express');
 const app = express();
 
